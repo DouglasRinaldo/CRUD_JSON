@@ -1,23 +1,25 @@
-import email
 from flask import Flask, request, Response 
 from flask_sqlalchemy import SQLAlchemy
 import mysql.connector
 import json
+from itens import Estoque
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/cadastro'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/pedidos'
 
 db = SQLAlchemy(app)
 
 #classe
 class Usuario(db.Model):
+    __tablename__ = "pedidos"
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(50))
-    email = db.Column(db.String(100))
-    
+    pedido = db.Column(db.Integer)
+    item = db.Column(db.String(200))
+   
     def for_json(self):
-        return {'id': self.id, 'nome': self.nome, 'email': self.email}
+        return {'id': self.id, 'nome': self.nome, 'pedido': self.pedido, 'item': self.item}
 
 #Select all
 @app.route("/usuarios",methods=['GET'])
@@ -40,7 +42,7 @@ def create_user():
     body = request.get_json()
 
     try:
-        usuario = Usuario(nome = body["nome"], email = body["email"])
+        usuario = Usuario(nome = body["nome"], pedido = body["pedido"], item = body["item"])
         db.session.add(usuario)
         db.session.commit()
         return make_response(201, "usuario", usuario.for_json(), "Usuário Criado com Sucesso!")
@@ -69,8 +71,10 @@ def update_user(id):
     try:
         if 'nome' in body:
             get_user.nome = body['nome']
-        if 'email' in body:
-            get_user.email = body['email']
+        if 'pedido' in body:
+            get_user.pedido = body['pedido']
+        if 'item' in body:
+            get_user.item = body['item']
                 
         db.session.add(get_user)
         db.session.commit()  
@@ -89,4 +93,3 @@ def make_response(status,nome_conteudo,conteudo, mensagem=False):
     return Response(json.dumps(body), status=status,mimetype="aplication/json")
 
 
-app.run()
