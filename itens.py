@@ -2,6 +2,8 @@ from flask import Flask, request, Response
 from flask_sqlalchemy import SQLAlchemy
 import mysql.connector
 import json
+from main import Usuario
+from main import Estoque
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
@@ -9,16 +11,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/estoque'
 
 db = SQLAlchemy(app)
 
-class Estoque(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    produto = db.Column(db.String(50))
-    preco = db.Column(db.Float)
-
-    def for_json(self):
-        return {'id': self.id, 'produto': self.produto, 'preco': self.preco}
-
-    def get_by_id(self,id):
-        return {'id': self.id, 'produto': self.produto, 'preco': self.preco}
 
 #Select all
 @app.route("/estoques",methods=['GET'])
@@ -90,4 +82,3 @@ def make_response(status,nome_conteudo,conteudo, mensagem=False):
     if(mensagem):
         body["mensagem"] = mensagem
     return Response(json.dumps(body), status=status,mimetype="aplication/json")
-app.run()
