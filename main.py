@@ -31,6 +31,8 @@ class Pedido(db.Model):
     pedido = db.Column(db.Integer)
     itens_id = db.Column(db.Integer, db.ForeignKey('estoque.id'))
 
+    def for_json(self):
+        return {'id': self.id, 'nome': self.nome, 'pedido': self.pedido, 'itens_id': self.itens_id}
 
 class EstoqueSchema(ma.SQLAlchemySchema):
     class Meta:
@@ -48,12 +50,6 @@ class PedidoSchema(ma.SQLAlchemySchema):
     pedido = ma.auto_field()
     itens_id = ma.auto_field()
     
-def for_json(id, nome, pedido, itens_id):
-    if Pedido.itens_id == Estoque.id:
-        return {'id': Pedido.id, 'nome': Pedido.nome, 'pedido': Pedido.pedido, 'itens_id': Estoque.nome_produto}
-    else:
-        return {'id': Pedido.id, 'nome': Pedido.nome, 'pedido': Pedido.pedido, 'itens_id': Pedido.itens_id}
-
 
 def dump_all_from_estoque():
     estoque_all = Estoque.query.all()
@@ -69,8 +65,6 @@ def dump_all_from_pedidos():
         pedidos_schema = PedidoSchema()
         output_pedidos = pedidos_schema.dump(pedidos)
     return output_pedidos
-
-
 
 
 #Select all
@@ -111,6 +105,7 @@ def create_user():
 @app.route("/pedido/<id>",methods=["DELETE"])
 def del_users(id):
     pedido = Pedido.query.filter_by(id=id).first()
+    print(pedido)
 
     try:
         db.session.delete(pedido)
@@ -125,14 +120,20 @@ def del_users(id):
 @app.route("/pedido/<id>",methods=["PUT"])
 def update_user(id):
     get_pedido = Pedido.query.filter_by(id=id).first()
+    pedidos_schema = PedidoSchema()
+    output_pedido = pedidos_schema.dump(get_pedido)
+    print(output_pedido)
     body = request.get_json()
     try:
         if 'nome' in body:
-            get_pedido.nome = body['nome']
+            get_pedido['nome'] = body['nome']
+            print(get_pedido)
         if 'pedido' in body:
-            get_pedido.pedido = body['pedido']
+            get_pedido['pedido'] = body['pedido']
+            print(get_pedido)
         if 'itens_id' in body:
-            get_pedido.itens_id = body['item']
+            get_pedido['itens_id'] = body['item']
+            print(get_pedido)
                 
         db.session.add(get_pedido)
         db.session.commit()  
